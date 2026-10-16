@@ -91,3 +91,55 @@ export const education = [
   "Backend Web Development Certificate — NIE",
   "Intermediate, Pre-Engineering — FBISE",
 ];
+
+// ——— CV (/cv) ———
+export const cv = {
+  summary:
+    "Graphic designer and QA engineer with 6+ years in brand, marketing and digital product design, and a background in web development and IT operations. I design identities, campaigns and UI assets in Illustrator, Photoshop and Figma, then test the products they ship in — functional, visual and cross-device — with clear, reproducible bug reports.",
+  // Fuller bullets for the CV, keyed by company; falls back to the site's `points`.
+  points: {
+    Kakushin: [
+      "Design logos, UI icons, publications, posters and social campaigns for 20+ internal products and client brands.",
+      "QA-test web and mobile products before release — functional, UI and cross-device checks with reproducible bug reports.",
+      "Partner with product and marketing teams to turn requirements into cohesive design solutions.",
+      "Own brand consistency across digital and print while shipping on tight weekly deadlines.",
+    ],
+    "Golden Home": [
+      "Produced multi-channel marketing: brochures, posters and social media sets.",
+      "Contributed product layout concepts in collaborative design sprint sessions.",
+      "Kept every public-facing asset aligned with brand standards across concurrent deliverables.",
+    ],
+    "Gold Pine Murree": [
+      "Built visual identities, brand guidelines and promotional collateral.",
+      "Produced vector artwork, custom iconography and marketing media for digital and print.",
+      "Shaped creative concepts around sales and customer-acquisition goals.",
+    ],
+    "InterHome Enterprises": [
+      "Led layout design and visual assets for digital marketing and print campaigns.",
+      "Supported lead designers in building consistent visual strategies across channels.",
+    ],
+    "Global Laboratories": [
+      "Supervised inventory operations, incoming stock validation and documentation.",
+      "Used stock analysis to set reorder thresholds and guide procurement.",
+    ],
+    "Mr. Cabin Public High School": [
+      "Managed IT infrastructure, network security, vendor procurement and troubleshooting.",
+      "Designed and built the school website and ran internal SMS communications.",
+    ],
+  } as Record<string, string[]>,
+  skills: [
+    { label: "Design tools", items: ["Adobe Illustrator", "Adobe Photoshop", "Figma", "Canva", "AI image direction"] },
+    { label: "Design", items: ["Brand identity", "Logo design", "Social campaigns", "Editorial layout", "Iconography", "Wireframing & prototyping"] },
+    { label: "Quality assurance", items: ["Functional testing", "UI / visual QA", "Cross-device testing", "Regression checks", "Test cases", "Bug reporting"] },
+    { label: "Web & IT", items: ["HTML / CSS", "Front-end & back-end basics", "Website maintenance", "Network security", "IT administration"] },
+  ],
+  certifications: [
+    { name: "Diploma in Web Development", org: "6 months · National Institute of Electronics (NIE), Islamabad" },
+    { name: "Certificates — Frontend Web Design, Backend Web Development, Web Development", org: "NIE, Islamabad" },
+  ],
+  academics: [
+    { name: "Intermediate, Pre-Engineering", org: "FBISE, Islamabad" },
+    { name: "Matriculation, Science", org: "FBISE, Islamabad" },
+  ],
+  languages: ["English (professional) · Urdu (native)"],
+};

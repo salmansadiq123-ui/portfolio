@@ -6,6 +6,7 @@ import Featured from "@/components/Featured";
 import Catalog from "@/components/Catalog";
 import Services from "@/components/Services";
 import QA from "@/components/QA";
+import QaLabFeature from "@/components/QaLabFeature";
 import Experience from "@/components/Experience";
 import Contact from "@/components/Contact";
 
@@ -20,6 +21,7 @@ export default function Home() {
       <Catalog />
       <Services />
       <QA />
+      <QaLabFeature />
       <Experience />
       <Contact />
     </main>

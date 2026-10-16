@@ -1,10 +1,13 @@
 import Link from "next/link";
+import ThemeToggle from "./ThemeToggle";
 
 const links = [
   { href: "/#work", label: "Work" },
   { href: "/#catalog", label: "Catalog" },
   { href: "/#qa", label: "QA" },
+  { href: "/qa-lab", label: "QA Lab" },
   { href: "/#experience", label: "Experience" },
+  { href: "/cv", label: "CV" },
 ];
 
 export default function Nav() {
@@ -20,9 +23,12 @@ export default function Nav() {
           </Link>
         ))}
       </nav>
-      <Link href="/#contact" className="nav__cta">
-        Let&apos;s talk
-      </Link>
+      <div className="nav__right">
+        <ThemeToggle />
+        <Link href="/#contact" className="nav__cta">
+          Let&apos;s talk
+        </Link>
+      </div>
     </header>
   );
 }

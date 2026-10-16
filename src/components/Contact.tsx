@@ -96,6 +96,7 @@ export default function Contact() {
           </div>
           <div>
             <h4>Elsewhere</h4>
+            <a href="/cv">CV / Résumé ↗</a>
             {profile.behance && (
               <a href={profile.behance} target="_blank" rel="noreferrer">
                 Behance ↗

@@ -2,6 +2,7 @@
 
 import { useInView } from "motion/react";
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import Reveal from "./Reveal";
 import { qaProducts } from "@/data/profile";
 
@@ -66,8 +67,11 @@ export default function QA() {
             At Kakushin I&apos;m the QA engineer as well as the designer. Before a product goes live I test the flows, the
             payments, every screen size and the visual details — then write bug reports developers can act on straight away.
           </p>
-          <div style={{ marginTop: 28 }}>
+          <div style={{ marginTop: 28, display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
             <span className="qa__badge">All checks passing</span>
+            <Link href="/qa-lab" className="btn btn--ghost" data-cursor="Try it">
+              Try my QA Lab →
+            </Link>
           </div>
           <Reveal>
             <ul className="qa__list">
