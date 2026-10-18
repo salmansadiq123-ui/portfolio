@@ -96,18 +96,19 @@ export default function Contact() {
           </div>
           <div>
             <h4>Elsewhere</h4>
-            <a href="/cv">CV / Résumé ↗</a>
-            {profile.behance && (
-              <a href={profile.behance} target="_blank" rel="noreferrer">
-                Behance ↗
-              </a>
-            )}
+            <a href="/cv">CV / Resume ↗</a>
+            <a href={profile.behance} target="_blank" rel="noreferrer">
+              Behance ↗
+            </a>
+            <a href={profile.linkedin} target="_blank" rel="noreferrer">
+              LinkedIn ↗
+            </a>
             <a href="#top">Back to top ↑</a>
           </div>
         </div>
         <footer className="footer">
           <span>© {new Date().getFullYear()} Salman Sadiq</span>
-          <span>Designed &amp; built with care · Next.js</span>
+          <span>Designed &amp; built with care</span>
         </footer>
       </div>
     </section>

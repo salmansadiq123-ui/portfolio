@@ -4,8 +4,8 @@ export const profile = {
   location: "Rawalpindi, Pakistan",
   email: "salman.sadiq123@gmail.com",
   phones: ["+92 303 0566286", "+92 330 7477731"],
-  // Set this to your Behance profile URL to show the link across the site.
-  behance: "",
+  behance: "https://www.behance.net/salmansadiq8",
+  linkedin: "https://www.linkedin.com/in/salman-sadiq-2802b584/",
   site: "https://salmansadiq.com",
 };
 

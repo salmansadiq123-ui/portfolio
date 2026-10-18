@@ -1,13 +1,16 @@
 import Link from "next/link";
 import ThemeToggle from "./ThemeToggle";
+import MobileMenu from "./MobileMenu";
 
 const links = [
   { href: "/#work", label: "Work" },
   { href: "/#catalog", label: "Catalog" },
   { href: "/#qa", label: "QA" },
   { href: "/qa-lab", label: "QA Lab" },
+  { href: "/logo-lab", label: "Logo Lab" },
   { href: "/#experience", label: "Experience" },
   { href: "/cv", label: "CV" },
+  { href: "/#contact", label: "Contact" },
 ];
 
 export default function Nav() {
@@ -28,6 +31,7 @@ export default function Nav() {
         <Link href="/#contact" className="nav__cta">
           Let&apos;s talk
         </Link>
+        <MobileMenu links={links} />
       </div>
     </header>
   );

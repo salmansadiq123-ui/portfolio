@@ -1,8 +1,8 @@
-import type { Page } from "puppeteer-core";
-import { launchBrowser, preparePage, settle, snap } from "./browser";
+import type { ElementHandle, Page } from "puppeteer-core";
+import { launchBrowser, preparePage, settle, sleep, snap } from "./browser";
 import { checkLinks, checksToFindings, inspectLanding, watchPage } from "./checks";
 import { chatJson, llmConfigured, type ChatMessage } from "./llm";
-import type { Finding, RunEvent, RunInput, RunResult, Step } from "./types";
+import type { Finding, Pointer, RunEvent, RunInput, RunResult, Step } from "./types";
 
 const TIME_BUDGET = Number(process.env.QA_TIME_BUDGET_MS || 250_000); // Vercel Hobby functions stop at 300 s
 const MAX_TURNS = Number(process.env.QA_MAX_TURNS || 12);
@@ -101,10 +101,35 @@ const describe = (a: Action, els: El[]) => {
   }
 };
 
-async function perform(page: Page, a: Action, input: RunInput, origin: string) {
+type Aim = (p: Pointer) => Promise<unknown>;
+
+/** Scrolls the element into view and returns its centre as a viewport percentage, for the live cursor. */
+async function pointAt(page: Page, el: ElementHandle | null, kind: Pointer["kind"]): Promise<Pointer> {
+  // Measured in the page's own layout viewport (what the screenshot shows), centring off-screen targets first.
+  const pos = await el
+    ?.evaluate((e) => {
+      let b = e.getBoundingClientRect();
+      if (b.top < 0 || b.bottom > innerHeight || b.left < 0 || b.right > innerWidth) {
+        e.scrollIntoView({ block: "center", inline: "center", behavior: "instant" });
+        b = e.getBoundingClientRect();
+      }
+      return { x: ((b.left + b.width / 2) / innerWidth) * 100, y: ((b.top + b.height / 2) / innerHeight) * 100 };
+    })
+    .catch(() => null);
+  if (!pos) return { x: 50, y: 70, kind };
+  await sleep(120); // let the scroll paint before the screenshot
+  const clamp = (n: number) => Math.max(1, Math.min(99, n));
+  return { x: clamp(pos.x), y: clamp(pos.y), kind };
+}
+
+async function perform(page: Page, a: Action, input: RunInput, origin: string, aim: Aim) {
   const fill = (t: string) => t.replaceAll("{{username}}", input.username ?? "").replaceAll("{{password}}", input.password ?? "");
   const el = "id" in a ? await page.$(`[data-qa-id="${a.id}"]`) : null;
   if ("id" in a && !el) throw new Error(`Element ${a.id} is no longer on the page`);
+  // Show where the tester is about to act before doing it.
+  if (a.type === "click" || a.type === "select") await aim(await pointAt(page, el, "click"));
+  else if (a.type === "type") await aim(await pointAt(page, el, "type"));
+  else if (a.type === "scroll") await aim({ x: 50, y: 70, kind: "scroll" });
   switch (a.type) {
     case "click":
       await el!.click();
@@ -188,9 +213,9 @@ export async function runQa(input: RunInput, emit: (e: RunEvent) => void): Promi
     });
     page.on("popup", (p) => void p?.close().catch(() => {}));
 
-    const frame = async () => {
+    const frame = async (pointer?: Pointer) => {
       const shot = await snap(page);
-      emit({ type: "frame", shot, url: page.url() });
+      emit({ type: "frame", shot, url: page.url(), pointer });
       return shot;
     };
     const addFinding = (f: Finding, shot?: string) => {
@@ -253,7 +278,7 @@ type Ctx = {
   steps: Step[];
   record: (s: Omit<Step, "n">) => void;
   addFinding: (f: Finding, shot?: string) => void;
-  frame: () => Promise<string>;
+  frame: (pointer?: Pointer) => Promise<string>;
   emit: (e: RunEvent) => void;
 };
 
@@ -307,7 +332,7 @@ async function aiLoop(page: Page, input: RunInput, origin: string, deadline: num
       const action = describe(a, els);
       const before = page.url();
       try {
-        await perform(page, a, input, origin);
+        await perform(page, a, input, origin, ctx.frame);
         ctx.record({ action, url: page.url(), ok: true, thought: reply.thought });
         history.push(`OK: ${action}`);
         // A new page means the remaining planned element ids are stale — look again first.
@@ -349,14 +374,27 @@ async function scriptedLogin(page: Page, input: RunInput, ctx: ScriptCtx): Promi
           (i) => i.offsetParent && i.compareDocumentPosition(p) & Node.DOCUMENT_POSITION_FOLLOWING,
         );
         fields.at(-1)?.setAttribute("data-qa-login", "user");
-        const submit = scope.querySelector<HTMLElement>("button[type=submit], input[type=submit]") ?? [...scope.querySelectorAll<HTMLElement>("button")].find((b) => b.offsetParent);
+        // Login screens often have no <form>: take the first visible button after the password field,
+        // preferring one that says log in / sign in / submit, never a header button above it.
+        const after = [...scope.querySelectorAll<HTMLElement>("button, input[type=submit], [role=button]")].filter(
+          (b) => b.offsetParent && p.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING,
+        );
+        const label = (b: HTMLElement) => b.innerText || (b as HTMLInputElement).value || b.getAttribute("aria-label") || "";
+        const submit = after.find((b) => /log ?in|sign ?in|submit|continue|next/i.test(label(b))) ?? after[0];
         submit?.setAttribute("data-qa-login", "submit");
       });
       const user = await page.$('[data-qa-login="user"]');
-      if (user) await user.type(input.username ?? "", { delay: 15 });
+      if (user) {
+        await ctx.frame(await pointAt(page, user, "type"));
+        await user.type(input.username ?? "", { delay: 15 });
+      }
+      await ctx.frame(await pointAt(page, pw, "type"));
       await pw.type(input.password ?? "", { delay: 15 });
       const submit = await page.$('[data-qa-login="submit"]');
-      if (submit) await submit.click();
+      if (submit) {
+        await ctx.frame(await pointAt(page, submit, "click"));
+        await submit.click();
+      }
       else await page.keyboard.press("Enter");
       await settle(page);
       // SPAs often redirect a moment after the API answers; give the login form time to go away.

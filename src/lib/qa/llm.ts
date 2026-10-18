@@ -22,7 +22,7 @@ let lastCall = 0;
 const benchedUntil = new Map<string, number>();
 
 /** Sends a chat request and parses a JSON object out of the reply. Throttled, retried and falls back across models. */
-export async function chatJson<T>(messages: ChatMessage[], { maxTokens = 1200, deadline }: { maxTokens?: number; deadline?: number } = {}): Promise<T> {
+export async function chatJson<T>(messages: ChatMessage[], { maxTokens = 1200, deadline, temperature = 0.2 }: { maxTokens?: number; deadline?: number; temperature?: number } = {}): Promise<T> {
   const limit = deadline ?? Date.now() + 25000;
   let lastError = "LLM unavailable";
   for (let attempt = 0; attempt < 6; attempt++) {
@@ -43,7 +43,7 @@ export async function chatJson<T>(messages: ChatMessage[], { maxTokens = 1200, d
       res = await fetch(`${BASE_URL}/chat/completions`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.LLM_API_KEY}` },
-        body: JSON.stringify({ model, messages, temperature: 0.2, max_tokens: maxTokens, response_format: { type: "json_object" } }),
+        body: JSON.stringify({ model, messages, temperature, max_tokens: maxTokens, response_format: { type: "json_object" } }),
         signal: AbortSignal.timeout(Math.max(5000, Math.min(45000, limit - Date.now()))),
       });
     } catch (e) {

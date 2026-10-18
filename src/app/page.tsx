@@ -7,6 +7,7 @@ import Catalog from "@/components/Catalog";
 import Services from "@/components/Services";
 import QA from "@/components/QA";
 import QaLabFeature from "@/components/QaLabFeature";
+import LogoLabFeature from "@/components/LogoLabFeature";
 import Experience from "@/components/Experience";
 import Contact from "@/components/Contact";
 
@@ -22,6 +23,7 @@ export default function Home() {
       <Services />
       <QA />
       <QaLabFeature />
+      <LogoLabFeature />
       <Experience />
       <Contact />
     </main>

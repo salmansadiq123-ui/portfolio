@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { Finding, RunEvent, RunResult, Step, Viewport } from "@/lib/qa/types";
+import type { Finding, Pointer, RunEvent, RunResult, Step, Viewport } from "@/lib/qa/types";
 
 type LiveFinding = Omit<Finding, "shot">;
 type RunState = {
   status: string;
   frame?: string;
   url?: string;
+  pointer?: Pointer;
+  pointerKey: number; // bumps on every new action so the click ripple replays
   steps: Step[];
   findings: LiveFinding[];
   result?: RunResult;
@@ -15,7 +17,7 @@ type RunState = {
   running: boolean;
 };
 
-const empty = (): RunState => ({ status: "Waiting", steps: [], findings: [], running: false });
+const empty = (): RunState => ({ status: "Waiting", steps: [], findings: [], running: false, pointerKey: 0 });
 const SEV_ORDER = ["critical", "major", "minor", "suggestion"] as const;
 
 function readPasscode() {
@@ -74,7 +76,7 @@ export default function QaLab() {
           patch(v, (s) => {
             switch (e.type) {
               case "status": return { ...s, status: e.message };
-              case "frame": return { ...s, frame: e.shot, url: e.url };
+              case "frame": return e.pointer ? { ...s, frame: e.shot, url: e.url, pointer: e.pointer, pointerKey: s.pointerKey + 1 } : { ...s, frame: e.shot, url: e.url };
               case "step": return { ...s, steps: [...s.steps, e.step] };
               case "finding": return { ...s, findings: [...s.findings, e.finding] };
               case "done": return { ...s, result: e.result, status: `Finished in ${Math.round(e.result.durationMs / 1000)} s`, running: false };
@@ -205,7 +207,9 @@ export default function QaLab() {
             <div className="phone">
               <div className="phone__screen">
                 {/* eslint-disable-next-line @next/next/no-img-element -- live data: URL frames */}
-                {runs.mobile.frame ? <img src={`data:image/jpeg;base64,${runs.mobile.frame}`} alt="Live mobile view" /> : <Idle />}</div>
+                {runs.mobile.frame ? <img src={`data:image/jpeg;base64,${runs.mobile.frame}`} alt="Live mobile view" /> : <Idle />}
+                {runs.mobile.frame && runs.mobile.pointer && <Cursor touch p={runs.mobile.pointer} pulse={runs.mobile.pointerKey} />}
+              </div>
             </div>
           </Sim>
         )}
@@ -218,7 +222,9 @@ export default function QaLab() {
               </div>
               <div className="browser__screen">
                 {/* eslint-disable-next-line @next/next/no-img-element -- live data: URL frames */}
-                {runs.desktop.frame ? <img src={`data:image/jpeg;base64,${runs.desktop.frame}`} alt="Live desktop view" /> : <Idle />}</div>
+                {runs.desktop.frame ? <img src={`data:image/jpeg;base64,${runs.desktop.frame}`} alt="Live desktop view" /> : <Idle />}
+                {runs.desktop.frame && runs.desktop.pointer && <Cursor p={runs.desktop.pointer} pulse={runs.desktop.pointerKey} />}
+              </div>
             </div>
           </Sim>
         )}
@@ -255,6 +261,32 @@ export default function QaLab() {
               ))}
           </ul>
         </div>
+      )}
+    </div>
+  );
+}
+
+/** The tester's pointer over the live view: an arrow on desktop, a fingertip on mobile. */
+function Cursor({ p, pulse, touch }: { p: Pointer; pulse: number; touch?: boolean }) {
+  return (
+    <div className={`qa-cursor ${touch ? "qa-cursor--touch" : ""} qa-cursor--${p.kind}`} style={{ left: `${p.x}%`, top: `${p.y}%` }} aria-hidden>
+      {p.kind !== "scroll" && <i key={pulse} className="qa-cursor__ring" />}
+      {touch ? (
+        <b className="qa-cursor__tip" />
+      ) : p.kind === "type" ? (
+        <svg className="qa-cursor__icon" viewBox="0 0 24 24" width="22" height="22">
+          <path d="M9 4h6M9 20h6M12 4v16" fill="none" stroke="#111" strokeWidth="4" strokeLinecap="round" />
+          <path d="M9 4h6M9 20h6M12 4v16" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      ) : p.kind === "scroll" ? (
+        <svg className="qa-cursor__icon" viewBox="0 0 24 24" width="24" height="24">
+          <rect x="7" y="3" width="10" height="17" rx="5" fill="#fff" stroke="#111" strokeWidth="1.5" />
+          <path d="M12 7v4" stroke="#111" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      ) : (
+        <svg className="qa-cursor__icon qa-cursor__icon--arrow" viewBox="0 0 24 24" width="24" height="24">
+          <path d="M4 2.5v17.2l4.6-4.3 2.9 6.6 3.1-1.4-2.9-6.4h6.4z" fill="#fff" stroke="#111" strokeWidth="1.4" strokeLinejoin="round" />
+        </svg>
       )}
     </div>
   );

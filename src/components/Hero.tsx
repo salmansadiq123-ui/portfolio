@@ -11,10 +11,10 @@ const roles = ["Graphic Designer", "QA Engineer", "Brand Builder", "Visual Story
 
 const pick = (slug: string, i: number) => projects.find((p) => p.slug === slug)!.shots[i];
 const floats = [
-  { shot: pick("mysizer", 0), style: { left: "6%", top: "14%", width: "clamp(110px, 13vw, 210px)" }, depth: 40, rot: -8 },
-  { shot: pick("dementiabuddy", 2), style: { left: "40%", top: "8%", width: "clamp(90px, 10vw, 170px)" }, depth: 22, rot: 5 },
-  { shot: pick("ecoclean", 2), style: { right: "22%", top: "26%", width: "clamp(100px, 12vw, 200px)" }, depth: 55, rot: 7 },
-  { shot: pick("l3arn", 0), style: { left: "24%", top: "34%", width: "clamp(80px, 8vw, 140px)" }, depth: 30, rot: -4 },
+  { shot: pick("mysizer", 0), style: { left: "6%", top: "max(14%, 120px)", width: "clamp(110px, 13vw, 210px)" }, depth: 40, rot: -8 },
+  { shot: pick("dementiabuddy", 2), style: { left: "40%", top: "max(8%, 100px)", width: "clamp(90px, 10vw, 170px)" }, depth: 22, rot: 5 },
+  { shot: pick("ecoclean", 2), style: { right: "22%", top: "max(26%, 150px)", width: "clamp(100px, 12vw, 200px)" }, depth: 55, rot: 7 },
+  { shot: pick("l3arn", 0), style: { left: "24%", top: "max(34%, 200px)", width: "clamp(80px, 8vw, 140px)" }, depth: 30, rot: -4 },
 ];
 
 function Line({ text, delay, ready, className = "" }: { text: string; delay: number; ready: boolean; className?: string }) {

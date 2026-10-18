@@ -41,15 +41,15 @@ export default function CvPage() {
               <a href={`mailto:${profile.email}`}>{profile.email}</a>
             </li>
             <li>{profile.phones.join(" · ")}</li>
-            <li>{profile.location}</li>
             <li>
-              <a href={profile.site}>{host(profile.site)}</a>
+              {profile.location} · <a href={profile.site}>{host(profile.site)}</a>
             </li>
-            {profile.behance && (
-              <li>
-                <a href={profile.behance}>{host(profile.behance)}</a>
-              </li>
-            )}
+            <li>
+              <a href={profile.behance}>{host(profile.behance)}</a>
+            </li>
+            <li>
+              <a href={profile.linkedin}>{host(profile.linkedin)}</a>
+            </li>
           </ul>
         </header>
 

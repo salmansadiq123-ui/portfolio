@@ -47,10 +47,13 @@ export type RunResult = {
   note?: string;
 };
 
+/** Where the tester is about to act, as a percentage of the viewport. */
+export type Pointer = { x: number; y: number; kind: "click" | "type" | "scroll" };
+
 // Streamed to the browser as NDJSON, one event per line.
 export type RunEvent =
   | { type: "status"; message: string }
-  | { type: "frame"; shot: string; url: string }
+  | { type: "frame"; shot: string; url: string; pointer?: Pointer }
   | { type: "step"; step: Step }
   | { type: "finding"; finding: Omit<Finding, "shot"> }
   | { type: "done"; result: RunResult }
