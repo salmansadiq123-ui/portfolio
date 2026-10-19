@@ -42,7 +42,7 @@ export default function CvPage() {
             </li>
             <li>{profile.phones.join(" · ")}</li>
             <li>
-              {profile.location} · <a href={profile.site}>{host(profile.site)}</a>
+              {profile.location} · <a href={profile.site}>www.{host(profile.site)}</a>
             </li>
             <li>
               <a href={profile.behance}>{host(profile.behance)}</a>
