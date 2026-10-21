@@ -8,6 +8,7 @@ import Services from "@/components/Services";
 import QA from "@/components/QA";
 import QaLabFeature from "@/components/QaLabFeature";
 import LogoLabFeature from "@/components/LogoLabFeature";
+import ThumbnailLabFeature from "@/components/ThumbnailLabFeature";
 import Experience from "@/components/Experience";
 import Contact from "@/components/Contact";
 
@@ -24,6 +25,7 @@ export default function Home() {
       <QA />
       <QaLabFeature />
       <LogoLabFeature />
+      <ThumbnailLabFeature />
       <Experience />
       <Contact />
     </main>

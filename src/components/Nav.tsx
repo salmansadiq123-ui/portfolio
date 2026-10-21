@@ -9,6 +9,7 @@ const links = [
   { href: "/#qa", label: "QA" },
   { href: "/qa-lab", label: "QA Lab" },
   { href: "/logo-lab", label: "Logo Lab" },
+  { href: "/thumbnail-lab", label: "Thumbnails" },
   { href: "/#experience", label: "Experience" },
   { href: "/cv", label: "CV" },
   { href: "/#contact", label: "Contact" },
