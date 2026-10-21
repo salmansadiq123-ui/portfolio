@@ -44,6 +44,6 @@ export async function POST(req: Request) {
     photo,
   });
 
-  if ("error" in result) return Response.json(result, { status: 502 });
+  // An { error } here (usually no free image quota) isn't a server fault: the client falls back to a designed background.
   return Response.json(result);
 }
