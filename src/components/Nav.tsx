@@ -2,18 +2,31 @@ import Link from "next/link";
 import ThemeToggle from "./ThemeToggle";
 import MobileMenu from "./MobileMenu";
 import LogoMark from "./LogoMark";
+import ToolsMenu, { type Tool } from "./ToolsMenu";
 
-const links = [
+const before = [
   { href: "/#work", label: "Work" },
   { href: "/#catalog", label: "Catalog" },
   { href: "/#qa", label: "QA" },
-  { href: "/qa-lab", label: "QA Lab" },
-  { href: "/logo-lab", label: "Logo Lab" },
-  { href: "/thumbnail-lab", label: "Thumbnails" },
+];
+
+const tools: Tool[] = [
+  { href: "/qa-lab", label: "QA Lab", blurb: "AI website tester with PDF bug reports" },
+  { href: "/logo-lab", label: "Logo Lab", blurb: "AI logo generator — SVG & PNG" },
+  { href: "/thumbnail-lab", label: "Thumbnail Lab", blurb: "AI YouTube thumbnails in 4K" },
+];
+
+const after = [
   { href: "/#experience", label: "Experience" },
   { href: "/cv", label: "CV" },
   { href: "/#contact", label: "Contact" },
 ];
+
+const navLink = (l: { href: string; label: string }) => (
+  <Link key={l.href} href={l.href}>
+    <span data-t={l.label}>{l.label}</span>
+  </Link>
+);
 
 export default function Nav() {
   return (
@@ -23,18 +36,16 @@ export default function Nav() {
           <i /> Salman Sadiq
         </Link>
         <nav className="nav__links" aria-label="Primary">
-          {links.map((l) => (
-            <Link key={l.href} href={l.href}>
-              <span data-t={l.label}>{l.label}</span>
-            </Link>
-          ))}
+          {before.map(navLink)}
+          <ToolsMenu tools={tools} />
+          {after.map(navLink)}
         </nav>
         <div className="nav__right">
           <ThemeToggle />
           <Link href="/#contact" className="nav__cta">
             Let&apos;s talk
           </Link>
-          <MobileMenu links={links} />
+          <MobileMenu links={[...before, { href: "", label: "Tools", children: tools }, ...after]} />
         </div>
       </header>
       {/* Coloured mark lives outside the difference-blended header so it keeps its colours; the <i> above reserves its space. */}

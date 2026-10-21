@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { profile } from "@/data/profile";
 
-type NavLink = { href: string; label: string };
+type NavLink = { href: string; label: string; children?: { href: string; label: string }[] };
 
 // Phone-only menu. Rendered into <body> so it escapes the nav's mix-blend-mode.
 export default function MobileMenu({ links }: { links: NavLink[] }) {
@@ -45,12 +45,32 @@ export default function MobileMenu({ links }: { links: NavLink[] }) {
               </button>
             </div>
             <nav className="mmenu__links wrap" aria-label="Mobile">
-              {links.map((l, i) => (
-                <Link key={l.href} href={l.href} onClick={close} style={{ transitionDelay: `${0.04 * i + 0.05}s` }}>
-                  <small className="mono">{String(i + 1).padStart(2, "0")}</small>
-                  {l.label}
-                </Link>
-              ))}
+              {links.map((l, i) => {
+                const delay = { transitionDelay: `${0.04 * i + 0.05}s` };
+                const num = <small className="mono">{String(i + 1).padStart(2, "0")}</small>;
+                if (!l.children)
+                  return (
+                    <Link key={l.href} href={l.href} onClick={close} style={delay}>
+                      {num}
+                      {l.label}
+                    </Link>
+                  );
+                return (
+                  <div key={l.label} className="mmenu__group" style={delay}>
+                    <span className="mmenu__label">
+                      {num}
+                      {l.label}
+                    </span>
+                    <div className="mmenu__sub">
+                      {l.children.map((c) => (
+                        <Link key={c.href} href={c.href} onClick={close}>
+                          {c.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </nav>
             <div className="mmenu__foot wrap">
               <a href={`mailto:${profile.email}`} className="mmenu__mail">
