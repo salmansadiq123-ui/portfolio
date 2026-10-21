@@ -623,3 +623,18 @@ html.menu-open, html.menu-open body { overflow: hidden; }
 .thumbf__item b { font-size: clamp(18px, 2.6vw, 34px); line-height: .95; letter-spacing: .01em; -webkit-text-stroke: 1px rgba(0,0,0,.6); text-shadow: 0 4px 14px rgba(0,0,0,.45); }
 .thumbf__item i { position: absolute; right: 8%; top: 12%; font-style: normal; font-size: clamp(26px, 3.6vw, 48px); transform: rotate(8deg); }
 .thumbf__item small { position: absolute; right: 8px; bottom: 8px; font-family: var(--font-mono), monospace; font-size: 10px; padding: 3px 6px; border-radius: 4px; background: rgba(0,0,0,.7); }
+
+/* Lab pages: how it works + FAQ (crawlable text under each tool) */
+.labinfo { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(32px, 6vw, 96px); margin-top: clamp(72px, 10vw, 140px); padding-top: clamp(40px, 6vw, 72px); border-top: 1px solid var(--line); }
+.labinfo__title { font-size: clamp(28px, 3.6vw, 48px); line-height: 1; letter-spacing: -0.04em; font-weight: 700; margin: 14px 0 28px; }
+.labinfo__steps { list-style: none; counter-reset: step; padding: 0; margin: 0 0 28px; display: grid; gap: 18px; }
+.labinfo__steps li { counter-increment: step; display: grid; grid-template-columns: 40px 1fr; column-gap: 12px; }
+.labinfo__steps li::before { content: "0" counter(step); grid-row: span 2; font-family: var(--font-mono), monospace; font-size: 13px; color: var(--accent); padding-top: 3px; }
+.labinfo__steps p, .labinfo__faq p { margin: 4px 0 0; color: var(--paper-dim); }
+.labinfo__features { padding-left: 18px; margin: 0; color: var(--paper-dim); display: grid; gap: 6px; font-size: 15px; }
+.labinfo__faq details { border-bottom: 1px solid var(--line); padding: 16px 0; }
+.labinfo__faq summary { cursor: pointer; font-weight: 600; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+.labinfo__faq summary::-webkit-details-marker { display: none; }
+.labinfo__faq summary::after { content: "+"; font-family: var(--font-mono), monospace; color: var(--accent); }
+.labinfo__faq details[open] summary::after { content: "–"; }
+@media (max-width: 760px) { .labinfo { grid-template-columns: 1fr; } }

@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import ThumbnailLab from "@/components/ThumbnailLab";
+import LabInfo from "@/components/LabInfo";
+import { getLab, pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Thumbnail Lab",
-  description:
-    "Free AI YouTube thumbnail maker: describe your video, pick a style and get 4K (3840×2160) thumbnails designed with Google Gemini — editable, downloadable as PNG or YouTube-ready JPG.",
-};
+const lab = getLab("thumbnail-lab");
+
+export const metadata: Metadata = pageMeta({ title: lab.title, description: lab.description, path: "/thumbnail-lab" });
 
 export default function ThumbnailLabPage() {
   return (
@@ -23,6 +23,7 @@ export default function ThumbnailLabPage() {
         </p>
       </div>
       <ThumbnailLab />
+      <LabInfo lab={lab} />
     </main>
   );
 }

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import LogoLab from "@/components/LogoLab";
+import LabInfo from "@/components/LabInfo";
+import { getLab, pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Logo Lab",
-  description: "AI logo generator: describe your brand, pick a style, and get four vector logo directions to download as SVG or PNG.",
-};
+const lab = getLab("logo-lab");
+
+export const metadata: Metadata = pageMeta({ title: lab.title, description: lab.description, path: "/logo-lab" });
 
 export default function LogoLabPage() {
   return (
@@ -22,6 +23,7 @@ export default function LogoLabPage() {
         </p>
       </div>
       <LogoLab />
+      <LabInfo lab={lab} />
     </main>
   );
 }

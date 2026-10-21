@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import QaLab from "@/components/QaLab";
+import LabInfo from "@/components/LabInfo";
+import { getLab, pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "QA Lab",
-  description: "Automated QA: give a URL and test credentials, watch an AI tester work through the site on mobile and desktop, and get a PDF bug report.",
-};
+const lab = getLab("qa-lab");
+
+export const metadata: Metadata = pageMeta({ title: lab.title, description: lab.description, path: "/qa-lab" });
 
 export default function QaLabPage() {
   return (
@@ -22,6 +23,7 @@ export default function QaLabPage() {
         </p>
       </div>
       <QaLab />
+      <LabInfo lab={lab} />
     </main>
   );
 }

@@ -11,6 +11,14 @@ import LogoLabFeature from "@/components/LogoLabFeature";
 import ThumbnailLabFeature from "@/components/ThumbnailLabFeature";
 import Experience from "@/components/Experience";
 import Contact from "@/components/Contact";
+import { pageMeta } from "@/lib/seo";
+
+export const metadata = pageMeta({
+  title: "Salman Sadiq — Graphic Designer & QA Engineer",
+  description:
+    "Portfolio of Salman Sadiq, Graphic Designer & QA Engineer at Kakushin, Rawalpindi. Brand identity, social campaigns, editorial design and product QA — plus free AI tools: QA Lab, Logo Lab and Thumbnail Lab.",
+  path: "/",
+});
 
 export default function Home() {
   return (

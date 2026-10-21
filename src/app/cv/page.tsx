@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { cv, experience, profile, qaProducts } from "@/data/profile";
 import PrintButton from "@/components/PrintButton";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "CV",
   description: `CV of ${profile.name}, ${profile.role} based in ${profile.location}.`,
-};
+  path: "/cv",
+});
 
 const host = (url: string) => url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
 
