@@ -231,7 +231,7 @@ export default function ThumbnailLab() {
           const bg = await fetchBackground(list[i], style, mood, photo && photoToAi ? photo.dataUrl : "");
           if (run !== runId.current) return;
           setBgs((prev) => prev.map((b, j) => (j === i ? bg : b)));
-          if (bg.state === "designed" && /quota|limit|unavailable|configured/i.test(bg.note ?? "")) {
+          if (bg.state === "designed" && /quota|limit|unavailable|configured|free tier/i.test(bg.note ?? "")) {
             // No point asking again for the rest; fall back to designed backgrounds.
             setBgs((prev) => prev.map((b) => (b.state === "loading" ? { ...bg } : b)));
             break;

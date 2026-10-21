@@ -96,10 +96,30 @@ export async function generateConcepts(brief: ThumbBrief, count: number): Promis
 // ---------- Background art (Gemini image models) ----------
 
 const GEMINI = "https://generativelanguage.googleapis.com/v1beta";
-const IMAGE_MODELS = (process.env.THUMB_IMAGE_MODELS || "gemini-2.5-flash-image,gemini-2.0-flash-preview-image-generation")
-  .split(",")
-  .map((m) => m.trim())
-  .filter(Boolean);
+const PREFERRED_IMAGE_MODELS = ["gemini-2.5-flash-image", "gemini-2.0-flash-preview-image-generation"];
+let discovered: { at: number; models: string[] } | null = null;
+
+/** Image-capable Gemini models this key can call: env override, else discovered from the models list (cached). */
+async function imageModels(): Promise<string[]> {
+  const env = process.env.THUMB_IMAGE_MODELS?.split(",").map((m) => m.trim()).filter(Boolean);
+  if (env?.length) return env;
+  if (discovered && Date.now() - discovered.at < 6 * 3_600_000) return discovered.models;
+  let found: string[] = [];
+  try {
+    const res = await fetch(`${GEMINI}/models?pageSize=1000`, { headers: { "x-goog-api-key": imageKey() }, signal: AbortSignal.timeout(8000) });
+    const data = await res.json();
+    found = ((data?.models ?? []) as { name?: string; supportedGenerationMethods?: string[] }[])
+      .filter((m) => /image/i.test(m.name ?? "") && !/imagen/i.test(m.name ?? "") && m.supportedGenerationMethods?.includes("generateContent"))
+      .map((m) => String(m.name).replace(/^models\//, ""));
+  } catch {
+    // Fall back to the known names below.
+  }
+  // Flash before Pro (free tier), newest first.
+  found.sort((a, b) => Number(/pro/i.test(a)) - Number(/pro/i.test(b)) || b.localeCompare(a));
+  const models = found.length ? found : PREFERRED_IMAGE_MODELS;
+  discovered = { at: Date.now(), models };
+  return models;
+}
 const imageKey = () => process.env.GEMINI_API_KEY || process.env.LLM_API_KEY || "";
 
 export const imagesConfigured = () =>
@@ -137,7 +157,10 @@ export async function generateBackground(opts: {
     .join("\n");
 
   let lastError = "AI art isn't available right now.";
-  for (const model of IMAGE_MODELS) {
+  const tried: string[] = [];
+  // A quota message is more useful to show than "model not found" from a later fallback.
+  let quotaError = "";
+  for (const model of await imageModels()) {
     if ((benchedUntil.get(model) ?? 0) > Date.now()) continue;
     const legacy = model.includes("2.0");
     const parts: unknown[] = [{ text: prompt }];
@@ -163,11 +186,17 @@ export async function generateBackground(opts: {
 
     if (!res.ok) {
       const body = await res.text().catch(() => "");
+      tried.push(`${model}: ${res.status} ${body.match(/"message":\s*"([^"]{0,140})/)?.[1] ?? ""}`.trim());
       if (res.status === 429) {
-        const noFreeTier = /limit:\s*0\b/.test(body) || /PerDay/i.test(body);
-        benchedUntil.set(model, Date.now() + (noFreeTier ? 3_600_000 : 60_000));
-        lastError = noFreeTier ? "The free Gemini quota for AI art is used up." : "AI art rate limit reached — try again in a minute.";
-      } else if (res.status === 404 || res.status === 400) {
+        const noFreeTier = /limit:\s*0\b/.test(body);
+        const daily = noFreeTier || /PerDay/i.test(body);
+        benchedUntil.set(model, Date.now() + (daily ? 3_600_000 : 60_000));
+        lastError = quotaError = noFreeTier
+          ? "AI art isn't included in this Gemini key's free tier."
+          : daily
+            ? "Today's free Gemini quota for AI art is used up."
+            : "AI art rate limit reached — try again in a minute.";
+      } else if (res.status === 404 || res.status === 400 || res.status === 403) {
         benchedUntil.set(model, Date.now() + 3_600_000);
         lastError = `AI art model unavailable (${res.status}).`;
       } else {
@@ -182,5 +211,6 @@ export async function generateBackground(opts: {
     if (img?.data) return { image: `data:${img.mimeType || "image/png"};base64,${img.data}`, model, photoInScene: !!photo };
     lastError = "The AI didn't return an image (it may have declined the prompt).";
   }
-  return { error: lastError };
+  if (tried.length) console.warn("[thumbnail] image models failed:", tried.join(" | "));
+  return { error: quotaError || lastError, tried } as { error: string };
 }
