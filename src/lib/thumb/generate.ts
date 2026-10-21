@@ -33,7 +33,10 @@ Reply with JSON only: {"concepts":[{...}]}`;
 
 export async function generateConcepts(brief: ThumbBrief, count: number): Promise<Concept[]> {
   const lines = [
-    `Video title: ${brief.title}`,
+    brief.title
+      ? `Video title: ${brief.title}`
+      : "No video title was given: infer the video's topic from the details below (or invent a strong, broadly appealing one that fits them) and design for it.",
+    brief.channel && `Channel name: ${brief.channel}`,
     brief.description && `Video description: ${brief.description}`,
     brief.topics && `Topics / keywords: ${brief.topics}`,
     brief.niche !== "Auto" && `Channel niche: ${brief.niche}`,
@@ -84,7 +87,7 @@ export async function generateConcepts(brief: ThumbBrief, count: number): Promis
         emoji: text(c.emoji, 8),
         layout,
         palette,
-        imagePrompt: text(c.imagePrompt, 1200) || `${brief.title}, ${STYLE_BRIEF[brief.style]}`,
+        imagePrompt: text(c.imagePrompt, 1200) || `${brief.title || brief.topics || brief.niche}, ${STYLE_BRIEF[brief.style]}`,
       };
     })
     .filter((c): c is Concept => !!c)

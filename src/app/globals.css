@@ -609,6 +609,10 @@ html.menu-open, html.menu-open body { overflow: hidden; }
 .thumb__canvas--big { border-radius: 14px; overflow: hidden; box-shadow: 0 30px 80px var(--shadow); }
 .thumb__dl { display: flex; flex-wrap: wrap; gap: 10px; }
 .thumb__dl .btn { padding: 13px 20px; font-size: 14px; }
+.thumb__carddl { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 16px 16px; margin-top: auto; }
+.thumb__carddl .btn { padding: 11px 18px; font-size: 14px; }
+.thumb__all { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; margin-top: 32px; }
+.thumb__all + .thumb__grid { margin-top: 20px; }
 .thumb__controls { display: flex; flex-direction: column; gap: 16px; background: var(--ink-2); border: 1px solid var(--line); border-radius: 18px; padding: clamp(16px, 2.4vw, 24px); }
 .thumb__row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .thumb__colors { display: flex; flex-wrap: wrap; gap: 10px; }

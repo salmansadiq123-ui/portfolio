@@ -23,8 +23,8 @@ export async function POST(req: Request) {
   if (limited(req)) return Response.json({ error: "You've made a lot of thumbnails — take a 10-minute break and try again." }, { status: 429 });
 
   const body = await req.json().catch(() => ({}));
+  // Nothing is required: the AI works from whatever the visitor filled in.
   const title = str(body.title, 120);
-  if (!title) return Response.json({ error: "Enter your video title." }, { status: 400 });
 
   const brief: ThumbBrief = {
     title,
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     channel: str(body.channel, 40),
     hasPhoto: !!body.hasPhoto,
   };
-  const count = Math.min(3, Math.max(1, Number(body.count) || 3));
+  const count = 3;
 
   try {
     const concepts = await generateConcepts(brief, count);

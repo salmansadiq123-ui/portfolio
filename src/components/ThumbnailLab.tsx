@@ -127,7 +127,7 @@ export default function ThumbnailLab() {
   const [text, setText] = useState("");
   const [position, setPosition] = useState<Position>("Auto");
   const [channel, setChannel] = useState("");
-  const [count, setCount] = useState(3);
+  const count = 3;
   const [photo, setPhoto] = useState<Photo | null>(null);
   const [photoToAi, setPhotoToAi] = useState(true);
 
@@ -139,6 +139,7 @@ export default function ThumbnailLab() {
   const [design, setDesign] = useState<Design>(initialDesign("Modern"));
   const [busy, setBusy] = useState(false);
   const [exporting, setExporting] = useState("");
+  const [customizing, setCustomizing] = useState(false);
   const [error, setError] = useState("");
   const [fontsReady, setFontsReady] = useState(0);
   const runId = useRef(0);
@@ -196,12 +197,11 @@ export default function ThumbnailLab() {
     const o = optionsFor(selected);
     if (editorRef.current && o) renderThumbnail(editorRef.current, 1920, o);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- optionsFor reads exactly these values
-  }, [concepts, bgs, design, selected, photo, channel, fontsReady, madeWith]);
+  }, [concepts, bgs, design, selected, photo, channel, fontsReady, madeWith, customizing]);
 
   async function generate(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    if (!title.trim()) return setError("Enter your video title.");
     const run = ++runId.current;
     setBusy(true);
     setConcepts([]);
@@ -220,7 +220,8 @@ export default function ThumbnailLab() {
       const list: Concept[] = data.concepts;
       setConcepts(list);
       setSelected(0);
-      setMadeWith({ style, mood, title: title.trim() });
+      setMadeWith({ style, mood, title: title.trim() || text.trim() || list[0]?.headline || channel.trim() });
+      setCustomizing(false);
       setDesign((d) => ({ ...initialDesign(style), seed: d.seed }));
       setBgs(list.map(() => ({ img: null, state: data.images ? "loading" : "designed", photoInScene: false })));
       setBusy(false);
@@ -268,13 +269,13 @@ export default function ThumbnailLab() {
     setBgs((prev) => prev.map((b, j) => (j === i ? bg : b)));
   }
 
-  async function exportAs(kind: "png4k" | "jpg4k" | "yt") {
-    const o = optionsFor(selected);
+  async function exportAs(kind: "png4k" | "jpg4k" | "yt", i = selected) {
+    const o = optionsFor(i);
     if (!o) return;
-    setExporting(kind);
+    setExporting(`${kind}:${i}`);
     try {
       const c = document.createElement("canvas");
-      const name = slug(madeWith.title);
+      const name = `${slug(madeWith.title)}-${i + 1}`;
       if (kind === "yt") {
         renderThumbnail(c, 1280, o);
         // YouTube's upload limit is 2 MB.
@@ -285,6 +286,26 @@ export default function ThumbnailLab() {
       } else {
         renderThumbnail(c, 3840, o);
         save(await toBlob(c, kind === "png4k" ? "image/png" : "image/jpeg", 0.95), `${name}-4k-3840x2160.${kind === "png4k" ? "png" : "jpg"}`);
+      }
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setExporting("");
+    }
+  }
+
+  async function downloadAll() {
+    setExporting("all");
+    try {
+      const name = slug(madeWith.title);
+      for (let i = 0; i < concepts.length; i++) {
+        const o = optionsFor(i);
+        if (!o) continue;
+        const c = document.createElement("canvas");
+        renderThumbnail(c, 3840, o);
+        save(await toBlob(c, "image/png"), `${name}-${i + 1}-4k-3840x2160.png`);
+        // Browsers drop rapid back-to-back downloads.
+        await new Promise((r) => setTimeout(r, 400));
       }
     } catch (e) {
       setError((e as Error).message);
@@ -314,7 +335,7 @@ export default function ThumbnailLab() {
 
       <form className="lab__form" onSubmit={generate}>
         <label className="field field--wide">
-          <span>Video title</span>
+          <span>Video title <em>optional</em></span>
           <input type="text" maxLength={120} placeholder="e.g. I built a 4K thumbnail maker with free AI" value={title} onChange={(e) => setTitle(e.target.value)} disabled={busy} />
         </label>
         <label className="field field--wide">
@@ -445,23 +466,13 @@ export default function ThumbnailLab() {
             </label>
           )}
         </div>
-        <div className="field">
-          <span>Variations</span>
-          <div className="lab__devices logo__chips">
-            {[1, 2, 3].map((n) => (
-              <button key={n} type="button" className={`chip ${count === n ? "is-on" : ""}`} aria-pressed={count === n} onClick={() => setCount(n)} disabled={busy}>
-                {n}
-              </button>
-            ))}
-          </div>
-        </div>
 
         <div className="lab__actions field--wide">
           <button type="submit" className="btn" disabled={busy}>
             {busy ? "Designing…" : concepts.length ? "Generate new thumbnails" : "Generate thumbnails"}
           </button>
           <p className="lab__fine">
-            Gemini writes the hook and art-directs each concept, then paints the background. Text and graphics are rendered at a true 3840×2160. Free to use; a few runs per visitor
+            Every field is optional — Gemini turns whatever you give it into 3 ready-to-download thumbnails, rendered at a true 3840×2160. Free to use; a few runs per visitor
             every 10 minutes.
           </p>
           {error && (
@@ -482,31 +493,46 @@ export default function ThumbnailLab() {
 
       {concepts.length > 0 && (
         <>
+          <div className="thumb__all">
+            <p className="lab__fine">Your 3 thumbnails are ready — download any of them in 4K (3840×2160), or customise one first.</p>
+            <button type="button" className="btn" onClick={downloadAll} disabled={!!exporting}>
+              {exporting === "all" ? "Rendering…" : "Download all 3 in 4K"}
+            </button>
+          </div>
           <div className="thumb__grid">
             {concepts.map((c, i) => (
-              <button
-                key={i}
-                type="button"
-                className={`thumb__card ${selected === i ? "is-on" : ""}`}
-                aria-pressed={selected === i}
-                onClick={() => {
-                  setSelected(i);
-                  editorWrap.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-                }}
-              >
+              <div key={i} className={`thumb__card ${customizing && selected === i ? "is-on" : ""}`}>
                 <span className="thumb__canvas">
-                  <canvas ref={(el) => void (cardRefs.current[i] = el)} aria-label={`Thumbnail concept ${i + 1}: ${c.headline}`} role="img" />
+                  <canvas ref={(el) => void (cardRefs.current[i] = el)} aria-label={`Thumbnail option ${i + 1}: ${c.headline}`} role="img" />
                   {bgs[i]?.state === "loading" && <em className="thumb__status mono">Painting AI art…</em>}
                 </span>
                 <span className="thumb__meta">
-                  <b>{c.title}</b>
+                  <b>
+                    Option {i + 1} · {c.title}
+                  </b>
                   {c.rationale && <small>{c.rationale}</small>}
                 </span>
-              </button>
+                <div className="thumb__carddl">
+                  <button type="button" className="btn" onClick={() => exportAs("png4k", i)} disabled={!!exporting}>
+                    {exporting === `png4k:${i}` ? "Rendering…" : "Download 4K"}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn--ghost"
+                    onClick={() => {
+                      setSelected(i);
+                      setCustomizing(true);
+                      setTimeout(() => editorWrap.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+                    }}
+                  >
+                    Customize
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
 
-          {current && (
+          {current && customizing && (
             <div className="thumb__editor" ref={editorWrap}>
               <div className="thumb__stage">
                 <div className="thumb__canvas thumb__canvas--big">
@@ -515,13 +541,13 @@ export default function ThumbnailLab() {
                 </div>
                 <div className="thumb__dl">
                   <button type="button" className="btn" onClick={() => exportAs("png4k")} disabled={!!exporting}>
-                    {exporting === "png4k" ? "Rendering…" : "Download 4K PNG"}
+                    {exporting === `png4k:${selected}` ? "Rendering…" : "Download 4K PNG"}
                   </button>
                   <button type="button" className="btn btn--ghost" onClick={() => exportAs("jpg4k")} disabled={!!exporting}>
-                    {exporting === "jpg4k" ? "Rendering…" : "4K JPG"}
+                    {exporting === `jpg4k:${selected}` ? "Rendering…" : "4K JPG"}
                   </button>
                   <button type="button" className="btn btn--ghost" onClick={() => exportAs("yt")} disabled={!!exporting}>
-                    {exporting === "yt" ? "Rendering…" : "YouTube-ready JPG (<2 MB)"}
+                    {exporting === `yt:${selected}` ? "Rendering…" : "YouTube-ready JPG (<2 MB)"}
                   </button>
                 </div>
                 <p className="lab__fine">
