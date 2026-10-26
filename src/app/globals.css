@@ -187,17 +187,19 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 
 /* Featured horizontal scroll */
 .featured { position: relative; }
-.featured__sticky { position: sticky; top: 0; height: 100svh; overflow: hidden; display: flex; flex-direction: column; justify-content: center; }
+.featured__sticky { position: sticky; top: 0; height: 100svh; overflow: hidden; display: flex; flex-direction: column; justify-content: center; padding: 96px 0 24px; box-sizing: border-box; }
 .featured__track { display: flex; gap: clamp(16px, 2.5vw, 40px); padding-inline: var(--gutter); will-change: transform; }
-.fcard { position: relative; flex: 0 0 auto; width: clamp(280px, 38vw, 620px); }
+/* Width also capped by viewport height so the 4:5 image + title always fit the pinned screen. */
+.fcard { position: relative; flex: 0 0 auto; width: min(clamp(280px, 38vw, 620px), max(200px, calc((100svh - 340px) * 0.8))); container-type: inline-size; }
 .fcard__media { position: relative; aspect-ratio: 4 / 5; border-radius: 14px; overflow: hidden; background: var(--ink-2); }
 .fcard__media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s var(--ease); }
 .fcard:hover .fcard__media img { transform: scale(1.06); }
 .fcard__media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,.65)); }
 .fcard__num { position: absolute; top: 18px; left: 20px; z-index: 2; color: var(--on-photo); font-family: var(--font-mono), monospace; font-size: 12px; letter-spacing: .1em; }
 .fcard__chip { position: absolute; top: 14px; right: 16px; z-index: 2; font-size: 12px; padding: 6px 12px; border-radius: 999px; background: rgba(13,12,11,.6); color: var(--on-photo); backdrop-filter: blur(8px); }
-.fcard__body { display: flex; justify-content: space-between; gap: 16px; margin-top: 18px; align-items: baseline; }
-.fcard__name { font-size: clamp(26px, 2.8vw, 44px); font-weight: 600; letter-spacing: -0.03em; line-height: 1; }
+.fcard__body { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; margin-top: 18px; align-items: baseline; }
+.fcard__body > div { min-width: 0; }
+.fcard__name { font-size: clamp(22px, 7cqi, 44px); font-weight: 600; letter-spacing: -0.03em; line-height: 1; }
 .fcard__tag { color: var(--paper-dim); font-size: 15px; margin-top: 8px; }
 .fcard__year { font-family: var(--font-mono), monospace; font-size: 12px; color: var(--paper-dim); white-space: nowrap; }
 .featured__progress { margin: 40px var(--gutter) 0; height: 1px; background: var(--line); position: relative; }
